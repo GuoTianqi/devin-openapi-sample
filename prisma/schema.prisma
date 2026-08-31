@@ -18,8 +18,29 @@ model User {
 }
 
 model Room {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
-  capacity  Int      @default(4)
-  createdAt DateTime @default(now())
+  capacity  Int       @default(4)
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+model Booking {
+  id                 String    @id @default(uuid())
+  title              String
+  notes              String?
+  startTime          DateTime
+  endTime            DateTime
+  roomId             String
+  organizerId        String
+  status             String    @default("pending")
+  cancellationReason String?
+  deletedAt          DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@index([roomId, startTime, endTime])
+  @@index([startTime])
 }

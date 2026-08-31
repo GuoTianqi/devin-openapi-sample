@@ -31,6 +31,20 @@ Errors are thrown as `ApiError` subclasses (`src/lib/errors.ts`) and serialized 
 { "error": { "code": "NOT_FOUND", "message": "Booking not found" } }
 ```
 
+## Endpoints
+
+`openapi/bookings-v2.yaml` is the contract for the bookings resource:
+
+| Method | Path                            | Notes                                            |
+| ------ | ------------------------------- | ------------------------------------------------ |
+| GET    | /api/v2/bookings                | pagination + `startDate`/`endDate`/`status` filters |
+| POST   | /api/v2/bookings                | 409 on room/time-slot overlap                     |
+| GET    | /api/v2/bookings/:id            |                                                   |
+| PATCH  | /api/v2/bookings/:id            | 422 once cancelled, 409 on overlap                |
+| DELETE | /api/v2/bookings/:id            | soft delete, frees the slot                       |
+| POST   | /api/v2/bookings/:id/confirm    | 422 if cancelled                                  |
+| POST   | /api/v2/bookings/:id/cancel     | 422 if already cancelled                          |
+
 ## Getting started
 
 ```bash
