@@ -237,6 +237,28 @@ describe('/api/v2/bookings', () => {
         .send({ title: 'Nope' })
         .expect(404);
     });
+
+    it('returns 403 for a user who is neither the organizer nor an admin', async () => {
+      const booking = await createBooking();
+      const other = await createUser({ role: 'organizer' });
+
+      await request(app)
+        .patch(`/api/v2/bookings/${booking.id}`)
+        .set('Authorization', authHeader(other))
+        .send({ title: 'Not mine' })
+        .expect(403);
+    });
+
+    it('allows an admin to update another user booking', async () => {
+      const booking = await createBooking();
+      const admin = await createUser({ role: 'admin' });
+
+      await request(app)
+        .patch(`/api/v2/bookings/${booking.id}`)
+        .set('Authorization', authHeader(admin))
+        .send({ title: 'Rescheduled by admin' })
+        .expect(200);
+    });
   });
 
   describe('DELETE /:id', () => {
@@ -260,6 +282,26 @@ describe('/api/v2/bookings', () => {
         .set('Authorization', authHeader(organizer))
         .send(validPayload())
         .expect(201);
+    });
+
+    it('returns 403 for a user who is neither the organizer nor an admin', async () => {
+      const booking = await createBooking();
+      const other = await createUser({ role: 'organizer' });
+
+      await request(app)
+        .delete(`/api/v2/bookings/${booking.id}`)
+        .set('Authorization', authHeader(other))
+        .expect(403);
+    });
+
+    it('allows an admin to delete another user booking', async () => {
+      const booking = await createBooking();
+      const admin = await createUser({ role: 'admin' });
+
+      await request(app)
+        .delete(`/api/v2/bookings/${booking.id}`)
+        .set('Authorization', authHeader(admin))
+        .expect(204);
     });
   });
 
@@ -286,6 +328,16 @@ describe('/api/v2/bookings', () => {
         .post(`/api/v2/bookings/${booking.id}/confirm`)
         .set('Authorization', authHeader(organizer))
         .expect(422);
+    });
+
+    it('returns 403 for a member', async () => {
+      const booking = await createBooking();
+      const member = await createUser({ role: 'member' });
+
+      await request(app)
+        .post(`/api/v2/bookings/${booking.id}/confirm`)
+        .set('Authorization', authHeader(member))
+        .expect(403);
     });
   });
 
@@ -314,6 +366,16 @@ describe('/api/v2/bookings', () => {
         .post(`/api/v2/bookings/${booking.id}/cancel`)
         .set('Authorization', authHeader(organizer))
         .expect(422);
+    });
+
+    it('returns 403 for a member', async () => {
+      const booking = await createBooking();
+      const member = await createUser({ role: 'member' });
+
+      await request(app)
+        .post(`/api/v2/bookings/${booking.id}/cancel`)
+        .set('Authorization', authHeader(member))
+        .expect(403);
     });
 
     it('returns 401 without auth', async () => {
